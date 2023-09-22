@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { Link, useMatch } from "react-router-dom";
+import { Outlet, useLocation, useParams } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
+import { inherits } from "util";
 
 const Container = styled.div`
-  padding: 0 20px;
   width: 480px;
+  padding: 0 20px;
   margin: 0 auto;
 `
 
@@ -22,6 +24,58 @@ const Title = styled.h1`
 
 const Loader = styled.div`
   text-align: center;
+`
+
+const Overview = styled.div`
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`
+
+const OverviewItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  span:first-child{
+    font-size: 10px;
+    font-weight: 400;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+`
+
+const Description = styled.p`
+  font-weight: 300;
+  margin: 20px 0px;
+`
+
+const Taps = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin: 25px 0px;
+  gap: 10px;
+`
+
+const Tap = styled.span<{$isActive: boolean}>`
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 16px;
+  font-weight: 400;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  padding: 7px 0px;
+  color: ${props => props.$isActive ? props.theme.accentColor : "inherit"};
+  pointer-events: ${props => props.$isActive ? "none" : "auto"};
+  a {
+    display: block;
+  }
+  a:hover {
+    cursor: ${props => props.$isActive ? "default" : "cursor"};
+  }
+  
 `
 
 interface LocationProps {
@@ -90,6 +144,9 @@ function Coin() {
   const [loading, setLoading] = useState(true);
   const [info, setInfo] = useState<InfoData>();
   const [priceInfo, setPriceInfo] = useState<PriceData>();
+  const priceMatch = useMatch("/:coinId/price");
+  const chartMatch = useMatch("/:coinId/chart");
+  console.log(priceMatch, chartMatch);
   const { coinId } = useParams();
   const { state } = useLocation() as LocationProps;
 
@@ -111,7 +168,7 @@ function Coin() {
     <div>
       <Container>
       <Header>
-        <Title>{state?.name || "loading"}</Title>
+        <Title>{state?.name ? state.name : loading ? "loading" : info?.name}</Title>
       </Header>
       {loading 
         ? <Loader>
@@ -119,8 +176,46 @@ function Coin() {
               Loading...
             </span>
           </Loader> 
-          : <span>{priceInfo?.quotes.USD.price}</span>
+        : 
+          <>
+            <Overview>
+              <OverviewItem>
+                <span>RANK</span>
+                <span>{info?.rank}</span>
+              </OverviewItem>
+              <OverviewItem>
+                <span>SYMBOL</span>
+                <span>﹩{info?.symbol}</span>
+              </OverviewItem>
+              <OverviewItem>
+                <span>OPEN SOURCE</span>
+                <span>{info?.open_source ? "YES" : "NO"}</span>
+              </OverviewItem>
+            </Overview>
+            <Description>
+              {info?.description}
+            </Description>
+            <Overview>
+              <OverviewItem>
+                <span>Total Supply</span>
+                <span>{priceInfo?.total_supply}</span>
+              </OverviewItem>
+              <OverviewItem>
+                <span>Max Supply</span>
+                <span>{priceInfo?.max_supply}</span>
+              </OverviewItem>
+            </Overview>
+          </>
       }
+      <Taps>
+        <Tap $isActive={chartMatch !== null}>
+          <Link to={`/${coinId}/chart`}>chart</Link>
+        </Tap>
+        <Tap $isActive={priceMatch !== null}>
+          <Link to={`/${coinId}/price`}>price</Link>          
+        </Tap>
+      </Taps>
+      <Outlet />
       </Container>
     </div>
   )
