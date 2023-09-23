@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "react-query";
 import { Link, useMatch } from "react-router-dom";
 import { Outlet, useLocation, useParams } from "react-router-dom";
 import styled, { keyframes } from "styled-components";
-import { inherits } from "util";
+import { fetchCoinInfo, fetchCoinTickers } from "../api";
 
 const Container = styled.div`
   width: 480px;
@@ -78,13 +79,17 @@ const Tap = styled.span<{$isActive: boolean}>`
   
 `
 
+interface RouteParams {
+  coinId: string;
+}
+
 interface LocationProps {
   state: {
     name: string
   } | undefined;
 }
 
-interface InfoData {
+interface IInfoData {
   id: string;
   name: string;
   symbol: string;
@@ -106,7 +111,7 @@ interface InfoData {
   last_data_at: string;
 }
 
-interface PriceData {
+interface ITickersData {
   id: string;
   name: string;
   symbol: string;
@@ -141,34 +146,21 @@ interface PriceData {
 }
 
 function Coin() {
-  const [loading, setLoading] = useState(true);
-  const [info, setInfo] = useState<InfoData>();
-  const [priceInfo, setPriceInfo] = useState<PriceData>();
+  const { coinId } = useParams() as { coinId: string };
+  const { state } = useLocation() as LocationProps;
   const priceMatch = useMatch("/:coinId/price");
   const chartMatch = useMatch("/:coinId/chart");
-  console.log(priceMatch, chartMatch);
-  const { coinId } = useParams();
-  const { state } = useLocation() as LocationProps;
-
-  useEffect(() => {
-    (async () => {
-      const infoData = await(
-        await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)
-      ).json();
-      const priceData = await(
-        await fetch(`	https://api.coinpaprika.com/v1/tickers/${coinId}`)
-      ).json();
-      setInfo(infoData);
-      setPriceInfo(priceData);
-      setLoading(false);
-    })()
-  }, []);
+  
+  const { isLoading: infoLoading, data: infoData } = useQuery<IInfoData>(["infoData", coinId], () => fetchCoinInfo(coinId as string));
+  const { isLoading: tickersLoading, data: tickersData } = useQuery<ITickersData>(["priceData", coinId], () => fetchCoinTickers(coinId as string));
+  
+  const loading = infoLoading || tickersLoading;
 
   return (
     <div>
       <Container>
       <Header>
-        <Title>{state?.name ? state.name : loading ? "loading" : info?.name}</Title>
+        <Title>{state?.name ? state.name : loading ? "loading" : infoData?.name}</Title>
       </Header>
       {loading 
         ? <Loader>
@@ -181,28 +173,28 @@ function Coin() {
             <Overview>
               <OverviewItem>
                 <span>RANK</span>
-                <span>{info?.rank}</span>
+                <span>{infoData?.rank}</span>
               </OverviewItem>
               <OverviewItem>
                 <span>SYMBOL</span>
-                <span>﹩{info?.symbol}</span>
+                <span>﹩{infoData?.symbol}</span>
               </OverviewItem>
               <OverviewItem>
                 <span>OPEN SOURCE</span>
-                <span>{info?.open_source ? "YES" : "NO"}</span>
+                <span>{infoData?.open_source ? "YES" : "NO"}</span>
               </OverviewItem>
             </Overview>
             <Description>
-              {info?.description}
+              {infoData?.description}
             </Description>
             <Overview>
               <OverviewItem>
                 <span>Total Supply</span>
-                <span>{priceInfo?.total_supply}</span>
+                <span>{tickersData?.total_supply}</span>
               </OverviewItem>
               <OverviewItem>
                 <span>Max Supply</span>
-                <span>{priceInfo?.max_supply}</span>
+                <span>{tickersData?.max_supply}</span>
               </OverviewItem>
             </Overview>
           </>
