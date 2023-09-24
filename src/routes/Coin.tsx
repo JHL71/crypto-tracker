@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import { Link, useMatch } from "react-router-dom";
 import { Outlet, useLocation, useParams } from "react-router-dom";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import { fetchCoinInfo, fetchCoinTickers } from "../api";
 
 const Container = styled.div`
@@ -78,10 +77,6 @@ const Tap = styled.span<{$isActive: boolean}>`
   }
   
 `
-
-interface RouteParams {
-  coinId: string;
-}
 
 interface LocationProps {
   state: {
@@ -207,7 +202,7 @@ function Coin() {
           <Link to={`/${coinId}/price`}>price</Link>          
         </Tap>
       </Taps>
-      <Outlet />
+      <Outlet context={{coinId}} />
       </Container>
     </div>
   )
