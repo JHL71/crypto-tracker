@@ -1,8 +1,9 @@
 import { useQuery } from "react-query";
-import { Link, useMatch } from "react-router-dom";
+import { Link, useMatch, useNavigate } from "react-router-dom";
 import { Outlet, useLocation, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { fetchCoinInfo, fetchCoinTickers } from "../api";
+import { Helmet } from "react-helmet-async";
 
 const Container = styled.div`
   width: 480px;
@@ -75,7 +76,27 @@ const Tap = styled.span<{$isActive: boolean}>`
   a:hover {
     cursor: ${props => props.$isActive ? "default" : "cursor"};
   }
-  
+`
+
+const Button = styled.button`
+  position: fixed;
+  bottom: 50px;
+  width: 40px;
+  height: 20px;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: ${props => props.theme.textColor};
+  color: ${props => props.theme.bgColor};
+  outline: none;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  &:hover {
+    background-color: ${props => props.theme.accentColor};
+    cursor: pointer;
+  }
 `
 
 interface LocationProps {
@@ -145,15 +166,29 @@ function Coin() {
   const { state } = useLocation() as LocationProps;
   const priceMatch = useMatch("/:coinId/price");
   const chartMatch = useMatch("/:coinId/chart");
+  const navigate = useNavigate();
   
-  const { isLoading: infoLoading, data: infoData } = useQuery<IInfoData>(["infoData", coinId], () => fetchCoinInfo(coinId as string));
-  const { isLoading: tickersLoading, data: tickersData } = useQuery<ITickersData>(["priceData", coinId], () => fetchCoinTickers(coinId as string));
+  const { isLoading: infoLoading, data: infoData } = useQuery<IInfoData>(["infoData", coinId], () => fetchCoinInfo(coinId as string), {
+    refetchOnWindowFocus: false,
+  });
+  const { isLoading: tickersLoading, data: tickersData } = useQuery<ITickersData>(
+    ["priceData", coinId], 
+    () => fetchCoinTickers(coinId as string),
+    { 
+      refetchOnWindowFocus: false,
+    }
+  );
   
   const loading = infoLoading || tickersLoading;
 
   return (
     <div>
       <Container>
+      <Helmet>
+        <title>
+          {state?.name ? state.name : loading ? "loading" : infoData?.name}
+        </title>
+      </Helmet>
       <Header>
         <Title>{state?.name ? state.name : loading ? "loading" : infoData?.name}</Title>
       </Header>
@@ -175,8 +210,8 @@ function Coin() {
                 <span>﹩{infoData?.symbol}</span>
               </OverviewItem>
               <OverviewItem>
-                <span>OPEN SOURCE</span>
-                <span>{infoData?.open_source ? "YES" : "NO"}</span>
+                <span>PRICE</span>
+                <span>{tickersData?.quotes.USD.price.toFixed(3)}</span>
               </OverviewItem>
             </Overview>
             <Description>
@@ -196,13 +231,14 @@ function Coin() {
       }
       <Taps>
         <Tap $isActive={chartMatch !== null}>
-          <Link to={`/${coinId}/chart`}>chart</Link>
+          <Link to={`/${coinId}/chart`} replace={true}>chart</Link>
         </Tap>
         <Tap $isActive={priceMatch !== null}>
-          <Link to={`/${coinId}/price`}>price</Link>          
+          <Link to={`/${coinId}/price`} replace={true}>price</Link>          
         </Tap>
       </Taps>
-      <Outlet context={{coinId}} />
+      <Outlet context={{coinId, data: tickersData}} />
+      <Button onClick={() => navigate('/')}>&larr;</Button>
       </Container>
     </div>
   )

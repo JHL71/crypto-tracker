@@ -17,17 +17,17 @@ interface IHistory {
 function Chart() {
   const { coinId } = useOutletContext<{ coinId: string }>();
   const { isLoading, data } = useQuery<IHistory[]>(["ohlcv", coinId], () => fetchCoinHistory(coinId));
-  console.log(data);
+  
   return (
     <div>{
       isLoading 
         ? "Loading chart..." 
         : <ApexChart 
-            type="line" 
+            type="candlestick" 
             series={[
               {
                 name: 'Price',
-                data: data ? data.map((el) => Number(el.close)) : []
+                data: data ? data.map((el) => [el.time_close * 1000, +el.open, +el.high, +el.low, +el.close]) : []
               },
             ]}
             options={{
@@ -35,6 +35,7 @@ function Chart() {
                 mode: "dark"
               },
               chart: {
+                type: "candlestick",
                 height: 300,
                 width: 500,
                 toolbar: {
@@ -46,8 +47,13 @@ function Chart() {
                 show: false
               },
               stroke: {
-                curve: "smooth",
-                width: 3
+                width: 2
+              },
+              fill: {
+                type: 'gradient',
+                gradient: {
+                  stops: [0, 0, 0],
+                }
               },
               yaxis: {
                 show: false
@@ -62,21 +68,25 @@ function Chart() {
                 axisBorder: {
                   show: false
                 },
-                categories: data?.map(el => String(new Date(el.time_close)).slice(0, -9)),
+                type: "datetime",
+                categories: data?.map(el => new Date(el.time_close * 1000).toUTCString()),
               },
-              fill: {
-                type: "gradient",
-                gradient: {
-                  gradientToColors: ["blue"],
-                  stops: [0, 100],
-                }
-              },
-              colors: ["red"],
               tooltip: {
                 y: {
                   formatter: (value) => `$${value.toFixed(2)}`
                 }
-              }
+              },
+              plotOptions: {
+                candlestick: {
+                  wick: {
+                    useFillColor: true,
+                  },
+                  colors: {
+                    upward: "#01B746",
+                    downward: "#EE403C",
+                  }
+                }
+              },
             }}
           />
     }</div>
