@@ -1,6 +1,11 @@
 import { HelmetProvider } from "react-helmet-async";
 import { Outlet } from "react-router-dom";
 import { createGlobalStyle } from "styled-components";
+import { ThemeProvider } from 'styled-components';
+import { darkTheme, lightTheme } from './theme';
+import { useRecoilValue } from "recoil";
+import { isDarkAtom } from "./atoms";
+import Header from "./components/header";
 
 const GlobalStyle = createGlobalStyle`
   html, body, div, span, applet, object, iframe,
@@ -65,11 +70,15 @@ const GlobalStyle = createGlobalStyle`
 `
 
 function App() {
+  const isDark = useRecoilValue(isDarkAtom)
   return (
     <>
       <HelmetProvider>
-        <GlobalStyle />
-        <Outlet />
+        <ThemeProvider theme={isDark ? darkTheme : lightTheme}>
+          <Header />
+          <GlobalStyle />
+          <Outlet />
+        </ThemeProvider>
       </HelmetProvider>
     </>
   );

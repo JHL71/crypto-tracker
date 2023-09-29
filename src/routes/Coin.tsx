@@ -82,12 +82,12 @@ const Button = styled.button`
   position: fixed;
   bottom: 50px;
   width: 40px;
-  height: 20px;
+  height: 40px;
   border-radius: 10px;
   font-size: 18px;
   font-weight: bold;
-  background-color: ${props => props.theme.textColor};
-  color: ${props => props.theme.bgColor};
+  background-color: rgba(0, 0, 0, 0.5);
+  color: ${props => props.theme.textColor};
   outline: none;
   border: none;
   display: flex;
@@ -95,6 +95,7 @@ const Button = styled.button`
   align-items: center;
   &:hover {
     background-color: ${props => props.theme.accentColor};
+    color: ${props => props.theme.bgColor};
     cursor: pointer;
   }
 `
@@ -164,8 +165,8 @@ interface ITickersData {
 function Coin() {
   const { coinId } = useParams() as { coinId: string };
   const { state } = useLocation() as LocationProps;
-  const priceMatch = useMatch("/:coinId/price");
-  const chartMatch = useMatch("/:coinId/chart");
+  const priceMatch = useMatch("crypto-tracker/:coinId/price");
+  const chartMatch = useMatch("crypto-tracker/:coinId/chart");
   const navigate = useNavigate();
   
   const { isLoading: infoLoading, data: infoData } = useQuery<IInfoData>(["infoData", coinId], () => fetchCoinInfo(coinId as string), {
@@ -175,6 +176,7 @@ function Coin() {
     ["priceData", coinId], 
     () => fetchCoinTickers(coinId as string),
     { 
+      refetchInterval: 60000,
       refetchOnWindowFocus: false,
     }
   );
@@ -211,7 +213,7 @@ function Coin() {
               </OverviewItem>
               <OverviewItem>
                 <span>PRICE</span>
-                <span>{tickersData?.quotes.USD.price.toFixed(3)}</span>
+                <span>{tickersData?.quotes?.USD?.price?.toFixed(3)}</span>
               </OverviewItem>
             </Overview>
             <Description>
@@ -231,14 +233,14 @@ function Coin() {
       }
       <Taps>
         <Tap $isActive={chartMatch !== null}>
-          <Link to={`/${coinId}/chart`} replace={true}>chart</Link>
+          <Link to={`./chart`} replace={true}>chart</Link>
         </Tap>
         <Tap $isActive={priceMatch !== null}>
-          <Link to={`/${coinId}/price`} replace={true}>price</Link>          
+          <Link to={`./price`} replace={true}>price</Link>          
         </Tap>
       </Taps>
       <Outlet context={{coinId, data: tickersData}} />
-      <Button onClick={() => navigate('/')}>&larr;</Button>
+      <Button onClick={() => navigate('/crypto-tracker')}>&larr;</Button>
       </Container>
     </div>
   )

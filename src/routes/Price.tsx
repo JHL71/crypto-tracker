@@ -67,7 +67,7 @@ interface ITickersData {
 }
 
 function Price() {
-  const { coinId, data } = useOutletContext<{ coinId: string, data: ITickersData}>();
+  const { data } = useOutletContext<{ coinId: string, data: ITickersData}>();
 
   return (
     <Wrap>
@@ -81,23 +81,23 @@ function Price() {
         <tbody>
           <Tr>
             <Td>Current Price</Td>
-            <Td>{data?.quotes.USD.price.toFixed(2)}</Td>
+            <Td>{data?.quotes?.USD?.price.toFixed(2)}</Td>
           </Tr>
           <Tr>
             <Td>Fluctuation rate</Td>
-            <Td>{data?.quotes.USD.percent_change_24h}</Td>
+            <Td>{data?.quotes?.USD?.percent_change_24h}</Td>
           </Tr>
           <Tr>
             <Td>ATH Price</Td>
-            <Td>{data?.quotes.USD.ath_price.toFixed(2)}</Td>
+            <Td>{data?.quotes?.USD?.ath_price.toFixed(2)}</Td>
           </Tr>
           <Tr>
             <Td>Market Cap</Td>
-            <Td>{data?.quotes.USD.market_cap.toFixed(2)}</Td>
+            <Td>{data?.quotes?.USD?.market_cap.toFixed(2)}</Td>
           </Tr>
           <Tr>
             <Td>Volume 24h</Td>
-            <Td>{data?.quotes.USD.volume_24h.toFixed(2)}</Td>
+            <Td>{data?.quotes?.USD?.volume_24h.toFixed(2)}</Td>
           </Tr>
         </tbody>
       </Table>

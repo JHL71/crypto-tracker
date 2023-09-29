@@ -22,10 +22,11 @@ const CoinsList = styled.ul`
 `
 
 const Coin = styled.li`
-  background-color: white;
-  color: ${props => props.theme.bgColor};
+  background-color: ${props => props.theme.cardBgColor};
+  color: ${props => props.theme.textColor};
   border-radius: 15px;
   margin-bottom: 10px;
+  border: 1px solid ${props => props.theme.textColor};
   a {
     display: flex;
     justify-content: center;
@@ -117,7 +118,7 @@ function Coins() {
         : <CoinsList>
             {data?.slice(0, 100).map(coin => (
             <Coin key={coin.id}>
-              <Link to={`/${coin.id}`} state={{ name: coin.name }}>
+              <Link to={`./${coin.id}`} state={{ name: coin.name }}>
                 <Img src={`https://coinicons-api.vercel.app/api/icon/${coin.symbol.toLowerCase()}`} alt="coinImg"/>
                 {coin.name} &rarr;
               </Link>

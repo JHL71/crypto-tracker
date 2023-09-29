@@ -7,7 +7,7 @@ import Chart from "./routes/Chart";
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/crypto-tracker",
     element: <App />,
     children: [
       {
